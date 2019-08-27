@@ -41,6 +41,8 @@ public:
 	void ClearMarks();
 	void MarkVertex(VertexType);
 	bool IsMarked(VertexType);
+	void PrintEdge(VertexType vertex);
+	void PrintVertex(VertexType vertex);
 private:
 	HeadNodeType<VertexType>* IndexIs(HeadNodeType<VertexType>* vertices,
 			VertexType vertex);
@@ -57,8 +59,23 @@ GraphType<VertexType>::GraphType() {
 	topVertex_ = nullptr;
 }
 
+// copy constructor 추가 필요
 template <class VertexType>
 GraphType<VertexType>::~GraphType() {
+	HeadNodeType<VertexType>* vertexTemp;
+	EdgeNodeType<VertexType>* edgePtr;
+	EdgeNodeType<VertexType>* edgeTemp;
+	while (topVertex_ != nullptr) {
+		edgePtr = topVertex_->edge;	
+		while (edgePtr != nullptr) {
+			edgeTemp = edgePtr;
+			edgePtr = edgePtr->edge;
+			delete edgeTemp;
+		}
+		vertexTemp = topVertex_;
+		topVertex_ = topVertex_->next;
+		delete vertexTemp;
+	}
 }
 
 const int NULL_EDGE = 0;
@@ -97,7 +114,8 @@ template <class VertexType>
 void GraphType<VertexType>::AddEdge(VertexType fromVertex, 
 		VertexType toVertex, int weight) {
 	HeadNodeType<VertexType>* temp;
-  EdgeNodeType<VertexType>* edgeTemp;
+ 	EdgeNodeType<VertexType>* edgeTemp;
+ 	EdgeNodeType<VertexType>* prevEdge = nullptr;
 
 	temp = IndexIs(topVertex_, fromVertex);
 	if (temp == nullptr) {
@@ -106,6 +124,7 @@ void GraphType<VertexType>::AddEdge(VertexType fromVertex,
 	}
 	edgeTemp = temp->edge;
 	while(!(edgeTemp == nullptr)) {
+		prevEdge = edgeTemp;
 		edgeTemp = edgeTemp->edge;
 	}
 	if (!IsFull()) {
@@ -115,6 +134,10 @@ void GraphType<VertexType>::AddEdge(VertexType fromVertex,
 		edgeTemp->vertex = toVertex;
 		edgeTemp->weight = weight;
 		edgeTemp->edge = nullptr;
+		if (prevEdge == nullptr)
+			temp->edge = edgeTemp;
+		else
+			prevEdge->edge = edgeTemp;
 	}
 }
 
@@ -122,7 +145,7 @@ template <class VertexType>
 int GraphType<VertexType>::WeightIs(VertexType fromVertex, 
 		VertexType toVertex) {
 	HeadNodeType<VertexType>* temp;
-  EdgeNodeType<VertexType>* edgeTemp;
+ 	EdgeNodeType<VertexType>* edgeTemp;
 
 	temp = IndexIs(topVertex_, fromVertex);
 	if (temp == nullptr) {
@@ -158,6 +181,7 @@ void GraphType<VertexType>::MakeEmpty() {
 
 template <class VertexType>
 bool GraphType<VertexType>::IsEmpty() const {
+	return true;
 }
 
 template <class VertexType>
@@ -167,7 +191,7 @@ bool GraphType<VertexType>::IsFull() const {
 
 template <class VertexType>
 void GraphType<VertexType>::ClearMarks() {
-	HeadNodeType<VertexType>* temp;
+	HeadNodeType<VertexType>* temp = topVertex_;
 	while (temp != nullptr) {
 		temp->mark = 0;
 		temp = temp->next;
@@ -177,14 +201,47 @@ void GraphType<VertexType>::ClearMarks() {
 template <class VertexType>
 void GraphType<VertexType>::MarkVertex(VertexType vertex) {
 	HeadNodeType<VertexType>* temp;
-	temp = IndexIs(vertices_, vertex);
+	temp = IndexIs(topVertex_, vertex);
+	if (temp == nullptr)
+		return;
 	temp->mark = 1;
 }
 
 template <class VertexType>
 bool GraphType<VertexType>::IsMarked(VertexType vertex) {
 	HeadNodeType<VertexType>* temp;
-	temp = IndexIs(vertices_, vertex);
+	temp = IndexIs(topVertex_, vertex);
+	if (temp == nullptr)
+		return false;
 	return (temp->mark == 1);
+}
+
+template <class VertexType>
+void GraphType<VertexType>::PrintEdge(VertexType vertex) {
+	HeadNodeType<VertexType>* temp = topVertex_;
+	EdgeNodeType<VertexType>* edgeTemp;
+	while(!(temp->vertex == vertex)) {
+		temp = temp->next;
+		if (temp == nullptr)
+			return;
+	}
+	edgeTemp = temp->edge;
+	std::cout << "vertex : " << temp->vertex << " ";
+	while (edgeTemp != nullptr) {
+		std::cout << edgeTemp->vertex << " ";
+		edgeTemp = edgeTemp->edge;
+	}
+	std::cout << std::endl;
+}
+
+template <class VertexType>
+void GraphType<VertexType>::PrintVertex(VertexType vertex) {
+	HeadNodeType<VertexType>* temp = topVertex_;
+	std::cout << "vertex : : ";
+	while (temp != nullptr) {
+		std::cout << temp->vertex << " ";
+		temp = temp->next;
+	}
+	std::cout << std::endl;
 }
 

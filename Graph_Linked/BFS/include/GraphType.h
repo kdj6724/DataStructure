@@ -2,8 +2,30 @@
 // 2019-08-26
 // kdj6724@naver.com
 #include "QueType.h"
+#include "StackType.h"
 
 const int MAX_VERTEX = 50;
+class FullGraph {
+};
+
+class EmptyGraph {
+};
+
+template <class VertexType>
+struct EdgeNodeType {
+  VertexType vertex;
+	int weight;
+  EdgeNodeType<VertexType>* edge;
+};
+
+template <class VertexType>
+struct HeadNodeType {
+  VertexType vertex;
+	bool mark;
+  HeadNodeType<VertexType>* next;
+  EdgeNodeType<VertexType>* edge;
+};
+
 template <class VertexType>
 class GraphType {
 public:
@@ -19,73 +41,137 @@ public:
 	void ClearMarks();
 	void MarkVertex(VertexType);
 	bool IsMarked(VertexType);
+	void PrintEdge(VertexType vertex);
+	void PrintVertex(VertexType vertex);
 private:
-	int IndexIs(VertexType* vertices, VertexType vertex);
+	HeadNodeType<VertexType>* IndexIs(HeadNodeType<VertexType>* vertices,
+			VertexType vertex);
 	int numVertices_;
 	int maxVertices_;
-	VertexType vertices_[MAX_VERTEX];
-	int edges_[MAX_VERTEX][MAX_VERTEX];
-	bool marks_[MAX_VERTEX];
+	HeadNodeType<VertexType>* vertices_;
+	HeadNodeType<VertexType>* topVertex_;
 };
 
 template <class VertexType>
 GraphType<VertexType>::GraphType() {
 	numVertices_ = 0;
-	maxVertices_ = MAX_VERTEX;
+	vertices_ = nullptr;
+	topVertex_ = nullptr;
 }
 
+// copy constructor 추가 필요
 template <class VertexType>
 GraphType<VertexType>::~GraphType() {
+	HeadNodeType<VertexType>* vertexTemp;
+	EdgeNodeType<VertexType>* edgePtr;
+	EdgeNodeType<VertexType>* edgeTemp;
+	while (topVertex_ != nullptr) {
+		edgePtr = topVertex_->edge;	
+		while (edgePtr != nullptr) {
+			edgeTemp = edgePtr;
+			edgePtr = edgePtr->edge;
+			delete edgeTemp;
+		}
+		vertexTemp = topVertex_;
+		topVertex_ = topVertex_->next;
+		delete vertexTemp;
+	}
 }
 
 const int NULL_EDGE = 0;
 template <class VertexType>
 void GraphType<VertexType>::AddVertex(VertexType vertex) {
-	vertices_[numVertices_] = vertex;
-	for (int index=0; index<numVertices_; index++) {
-		edges_[numVertices_][index] = NULL_EDGE;
-		edges_[index][numVertices_] = NULL_EDGE;
+	HeadNodeType<VertexType>* temp;
+	if (!IsFull()) {
+		throw FullGraph();
+	} else {	
+		temp = new HeadNodeType<VertexType>;
+		temp->vertex = vertex;
+		temp->next = nullptr;
+		temp->edge = nullptr;
+		if (vertices_ != nullptr)
+			vertices_->next = temp;
+		else
+			topVertex_ = temp;
+		vertices_ = temp;
+		numVertices_++;
 	}
-	numVertices_++;
 }
 
 template <class VertexType>
-int GraphType<VertexType>::IndexIs(VertexType* vertices, VertexType vertex) {
-	int index = 0;
-	while (!(vertex == vertices_[index]))
-		index++;
-	return index;
+HeadNodeType<VertexType>* GraphType<VertexType>::IndexIs(HeadNodeType<VertexType>* 
+		vertices, VertexType vertex) {
+	HeadNodeType<VertexType>* temp;
+	while (!(vertex == vertices->vertex)) {
+		vertices = vertices->next;
+		if (vertices == nullptr)
+			break;
+	}
+	return vertices;
 }
 
 template <class VertexType>
 void GraphType<VertexType>::AddEdge(VertexType fromVertex, 
 		VertexType toVertex, int weight) {
-	int row;
-	int col;
-	row = IndexIs(vertices_, fromVertex);
-	col = IndexIs(vertices_, toVertex);
-	edges_[row][col] = weight;
+	HeadNodeType<VertexType>* temp;
+ 	EdgeNodeType<VertexType>* edgeTemp;
+ 	EdgeNodeType<VertexType>* prevEdge = nullptr;
+
+	temp = IndexIs(topVertex_, fromVertex);
+	if (temp == nullptr) {
+		std::cout << "Can not found Vertex" << std::endl;
+		return;
+	}
+	edgeTemp = temp->edge;
+	while(!(edgeTemp == nullptr)) {
+		prevEdge = edgeTemp;
+		edgeTemp = edgeTemp->edge;
+	}
+	if (!IsFull()) {
+		throw FullGraph();
+	} else {	
+		edgeTemp = new EdgeNodeType<VertexType>;
+		edgeTemp->vertex = toVertex;
+		edgeTemp->weight = weight;
+		edgeTemp->edge = nullptr;
+		if (prevEdge == nullptr)
+			temp->edge = edgeTemp;
+		else
+			prevEdge->edge = edgeTemp;
+	}
 }
 
 template <class VertexType>
 int GraphType<VertexType>::WeightIs(VertexType fromVertex, 
 		VertexType toVertex) {
-	int row;
-	int col;
-	row = IndexIs(vertices_, fromVertex);
-	col = IndexIs(vertices_, toVertex);
-	return edges_[row][col];
+	HeadNodeType<VertexType>* temp;
+ 	EdgeNodeType<VertexType>* edgeTemp;
+
+	temp = IndexIs(topVertex_, fromVertex);
+	if (temp == nullptr) {
+		std::cout << "Can not found Vertex" << std::endl;
+		return 0;
+	}
+	edgeTemp = temp->edge;
+	while(edgeTemp != nullptr) {
+		if (edgeTemp->vertex == toVertex)
+			return edgeTemp->weight;
+		edgeTemp = edgeTemp->edge;
+	}
+	return 0;
 }
 
 template <class VertexType>
 void GraphType<VertexType>::GetToVertices(VertexType vertex,
 		QueType<VertexType>& adjVertices) {
-	int fromIndex;
-	int toIndex;
-	fromIndex = IndexIs(vertices_, vertex);
-	for (toIndex = 0; toIndex < numVertices_; toIndex++) {
-		if (edges_[fromIndex][toIndex] != NULL_EDGE)
-			adjVertices.Enqueue(vertices_[toIndex]);
+	HeadNodeType<VertexType>* temp;
+  EdgeNodeType<VertexType>* edgeTemp;
+
+	temp = IndexIs(topVertex_, vertex);
+	edgeTemp = temp->edge;
+	while(edgeTemp != nullptr) {
+		adjVertices.Enqueue(edgeTemp->vertex);
+		edgeTemp = edgeTemp->edge;
 	}
 }
 
@@ -95,6 +181,7 @@ void GraphType<VertexType>::MakeEmpty() {
 
 template <class VertexType>
 bool GraphType<VertexType>::IsEmpty() const {
+	return true;
 }
 
 template <class VertexType>
@@ -104,20 +191,57 @@ bool GraphType<VertexType>::IsFull() const {
 
 template <class VertexType>
 void GraphType<VertexType>::ClearMarks() {
-	memset(marks_, 0, maxVertices_);
+	HeadNodeType<VertexType>* temp = topVertex_;
+	while (temp != nullptr) {
+		temp->mark = 0;
+		temp = temp->next;
+	}
 }
 
 template <class VertexType>
 void GraphType<VertexType>::MarkVertex(VertexType vertex) {
-	int index;
-	index = IndexIs(vertices_, vertex);
-	marks_[index] = 1;
+	HeadNodeType<VertexType>* temp;
+	temp = IndexIs(topVertex_, vertex);
+	if (temp == nullptr)
+		return;
+	temp->mark = 1;
 }
 
 template <class VertexType>
 bool GraphType<VertexType>::IsMarked(VertexType vertex) {
-	int index;
-	index = IndexIs(vertices_, vertex);
-	return (marks_[index] == 1);
+	HeadNodeType<VertexType>* temp;
+	temp = IndexIs(topVertex_, vertex);
+	if (temp == nullptr)
+		return false;
+	return (temp->mark == 1);
+}
+
+template <class VertexType>
+void GraphType<VertexType>::PrintEdge(VertexType vertex) {
+	HeadNodeType<VertexType>* temp = topVertex_;
+	EdgeNodeType<VertexType>* edgeTemp;
+	while(!(temp->vertex == vertex)) {
+		temp = temp->next;
+		if (temp == nullptr)
+			return;
+	}
+	edgeTemp = temp->edge;
+	std::cout << "vertex : " << temp->vertex << " ";
+	while (edgeTemp != nullptr) {
+		std::cout << edgeTemp->vertex << " ";
+		edgeTemp = edgeTemp->edge;
+	}
+	std::cout << std::endl;
+}
+
+template <class VertexType>
+void GraphType<VertexType>::PrintVertex(VertexType vertex) {
+	HeadNodeType<VertexType>* temp = topVertex_;
+	std::cout << "vertex : : ";
+	while (temp != nullptr) {
+		std::cout << temp->vertex << " ";
+		temp = temp->next;
+	}
+	std::cout << std::endl;
 }
 

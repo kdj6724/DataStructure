@@ -1,6 +1,7 @@
 // GraphType.h
 // 2019-08-26
 // kdj6724@naver.com
+#include <cstring>
 #include "QueType.h"
 #include "StackType.h"
 
