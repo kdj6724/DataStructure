@@ -1,0 +1,3 @@
+/Users/kdj6724/Test/DataStructure/Sort/Heap/build/CMakeFiles/rebuild_cache.dir
+/Users/kdj6724/Test/DataStructure/Sort/Heap/build/CMakeFiles/edit_cache.dir
+/Users/kdj6724/Test/DataStructure/Sort/Heap/build/CMakeFiles/sort.dir

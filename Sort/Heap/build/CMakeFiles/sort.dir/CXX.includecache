@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/Heap.h
+
+/Users/kdj6724/Test/DataStructure/Sort/Heap/src/main.cpp
+iostream
+-
+Heap.h
+/Users/kdj6724/Test/DataStructure/Sort/Heap/src/Heap.h
+

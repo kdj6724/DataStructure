@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/kdj6724/Test/DataStructure/Sort/Heap/build",
+  "command": "/usr/bin/clang++   -I/Users/kdj6724/Test/DataStructure/Sort/Heap/include  -std=c++11 -g -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk   -o CMakeFiles/sort.dir/src/main.cpp.o -c /Users/kdj6724/Test/DataStructure/Sort/Heap/src/main.cpp",
+  "file": "/Users/kdj6724/Test/DataStructure/Sort/Heap/src/main.cpp"
+}
+]
