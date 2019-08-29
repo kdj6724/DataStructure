@@ -66,7 +66,7 @@ void FillGraph(GraphType<VertexType>* graph) {
 	graph->AddEdge("Houston", "Atlanta", 800);
 }
 
-int main(void) {
+int main(int argv, char* argc[]) {
 	using namespace std;
 	GraphType<string> graph;
 	FillGraph<string>(&graph);
